@@ -1,0 +1,115 @@
+{{ define "left" }}
+  {{ partial "sidebar/mainnav.html" . }}
+  {{ partial "sidebar/tags.html" . }}
+{{ end }}
+
+{{ define "main" }}
+  <article class="prose max-w-none dark:prose-invert">
+    {{ partial "breadcrumbs.html" . }}
+    
+    <!-- Tag Header with Metadata -->
+    <div class="not-prose mb-8">
+      <div class="flex items-center gap-4 mb-6">
+        <span class="icon-svg icon-lg">{{ partialCached "icon" "tag" "tag" }}</span>
+        <h1 class="m-0">{{ .Title }}</h1>
+        <span class="ml-auto text-sm font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
+          {{ len .Pages }} item{{ if ne (len .Pages) 1 }}s{{ end }}
+        </span>
+      </div>
+      
+      <!-- Tag Description -->
+      {{ with .Content }}
+        <div class="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 mb-6">
+          {{ . }}
+        </div>
+      {{ end }}
+      
+      <!-- Tag Metadata -->
+      {{ if or .Params.lastmod .Params.authors }}
+        <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+          <div class="flex flex-wrap gap-6 text-sm">
+            {{- with .Params.lastmod }}
+              <div>
+                <strong class="text-gray-900 dark:text-gray-100">Last Updated:</strong>
+                <time class="text-gray-600 dark:text-gray-400" datetime="{{ . | time.Format "2006-01-02" }}">
+                  {{ . | time.Format "January 2, 2006" }}
+                </time>
+              </div>
+            {{- end }}
+            {{- with .Params.authors }}
+              <div>
+                <strong class="text-gray-900 dark:text-gray-100">Contributors:</strong>
+                <span class="text-gray-600 dark:text-gray-400">{{ delimit . ", " }}</span>
+              </div>
+            {{- end }}
+          </div>
+        </div>
+      {{ end }}
+    </div>
+
+    <!-- Content Pages Grouped by Type -->
+    {{- range .Pages.GroupBy "Type" }}
+      <section class="mt-12">
+        <h2 class="border-b-2 border-gray-200 dark:border-gray-700 pb-3 mb-6 text-2xl">
+          {{ (site.GetPage .Key).LinkTitle }}
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 not-prose">
+          {{ range .Pages }}
+            <a href="{{ .Permalink }}" 
+               class="group relative block p-5 rounded-lg border border-gray-200 dark:border-gray-700 
+                      bg-white dark:bg-gray-900 hover:shadow-lg hover:border-blue-400 dark:hover:border-blue-500 
+                      transition-all duration-200 overflow-hidden">
+              
+              <!-- Card Background Gradient on Hover -->
+              <div class="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent dark:from-blue-950/20 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+              
+              <div class="relative z-10">
+                <!-- Title -->
+                <h3 class="text-base font-semibold mb-2 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
+                  {{ .Title }}
+                </h3>
+                
+                <!-- Summary -->
+                <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
+                  {{ .Summary | default "No description available" }}
+                </p>
+                
+                <!-- Metadata Footer -->
+                <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-500 pt-3 border-t border-gray-100 dark:border-gray-800">
+                  <span class="flex items-center gap-1">
+                    {{ if .Date }}
+                      <time datetime="{{ .Date.Format "2006-01-02" }}">
+                        {{ .Date.Format "Jan 2, 2006" }}
+                      </time>
+                    {{ end }}
+                  </span>
+                  {{ if gt .WordCount 0 }}
+                    <span>{{ .ReadingTime }} min read</span>
+                  {{ end }}
+                </div>
+              </div>
+            </a>
+          {{- end }}
+        </div>
+        
+        <!-- Empty State for Group -->
+        {{ if eq (len .Pages) 0 }}
+          <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+            <p>No items found in this category.</p>
+          </div>
+        {{ end }}
+      </section>
+    {{- end }}
+    
+    <!-- Empty State for All Items -->
+    {{ if eq (len .Pages) 0 }}
+      <div class="not-prose text-center py-16">
+        <div class="text-gray-400 dark:text-gray-600 mb-4">
+          <span class="icon-svg icon-lg">{{ partialCached "icon" "tag" "tag" }}</span>
+        </div>
+        <p class="text-lg text-gray-600 dark:text-gray-400">No content found for this tag.</p>
+      </div>
+    {{ end }}
+  </article>
+{{ end }}
